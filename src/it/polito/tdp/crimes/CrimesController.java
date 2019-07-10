@@ -7,6 +7,10 @@ package it.polito.tdp.crimes;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultWeightedEdge;
+
+import it.polito.tdp.crimes.model.Adiacenza;
 import it.polito.tdp.crimes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,10 +29,10 @@ public class CrimesController {
     private URL location;
 
     @FXML // fx:id="boxCategoria"
-    private ComboBox<?> boxCategoria; // Value injected by FXMLLoader
+    private ComboBox<String> boxCategoria; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxMese"
-    private ComboBox<?> boxMese; // Value injected by FXMLLoader
+    private ComboBox<Integer> boxMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnAnalisi"
     private Button btnAnalisi; // Value injected by FXMLLoader
@@ -45,7 +49,22 @@ public class CrimesController {
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Crea grafo...\n");
+    	
+    	try {
+    	
+	    	model.creaGrafo(boxCategoria.getValue(), boxMese.getValue());
+	    	
+	    	Graph<String, Adiacenza> grafo = model.getGrafo();
+	    	
+	    	for(Adiacenza a : grafo.edgeSet()) {
+	    		if(a.getPeso() > model.calcolaPesoMedio(grafo)) {
+	    			txtResult.appendText(a.toString());
+	    		}
+	    	}
+    	}
+    	catch(NullPointerException npe) {
+    		txtResult.appendText("Si prega di scegliere una categoria di reato e il mese in cui si desidera effettuare la ricerca.");
+    	}
     }
     
     @FXML
@@ -67,5 +86,7 @@ public class CrimesController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	boxCategoria.getItems().addAll(model.listAllCategories());
+    	boxMese.getItems().addAll(model.listAllMesi());
     }
 }
